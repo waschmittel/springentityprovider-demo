@@ -42,50 +42,58 @@ public class EntityProviderDemoUI extends UI {
     Grid<Superhero> superheroGrid = new Grid<>(Superhero.class);
     Grid<Person>    personGrid    = new Grid<>(Person.class);
 
-    @Override
-    protected void init(VaadinRequest request) {
+    Button sampleDataButton;
+
+    TextField heroFilter     = new TextField("name filter");
+    TextField employeeFilter = new TextField("name filter");
+
+    /**
+     * this should be in a Design class that is used by a view ... but since this is only a demo, it's okay
+     *
+     * @return
+     */
+    private void makeLayout() {
         VerticalLayout layout = new VerticalLayout();
         setContent(layout);
-
-        Button sampleDataButton = new Button("create sample data", (event) -> {
-            createSampleData();
-        });
+        sampleDataButton = new Button("create sample data");
         layout.addComponent(sampleDataButton);
 
         HorizontalLayout gridLayout = new HorizontalLayout();
         layout.addComponent(gridLayout);
 
         VerticalLayout heroLayout = new VerticalLayout();
+        heroLayout.addComponent(new Label("Superheroes"));
+        heroLayout.addComponent(superheroGrid);
+        heroLayout.addComponent(heroFilter);
         gridLayout.addComponent(heroLayout);
 
-        heroLayout.addComponent(new Label("Superheroes"));
+        VerticalLayout personLayout = new VerticalLayout();
+        personLayout.addComponent(new Label("Persons"));
+        personLayout.addComponent(personGrid);
+        personLayout.addComponent(employeeFilter);
+        gridLayout.addComponent(personLayout);
+    }
+
+    @Override
+    protected void init(VaadinRequest request) {
+        makeLayout();
 
         superheroGrid.setDataProvider(superheroProvider);
         superheroGrid.removeColumn("id");
-        heroLayout.addComponent(superheroGrid);
-
-        TextField heroFilter = new TextField("name filter", (event) -> {
-            Superhero filterHero = new Superhero();
-            filterHero.setSuperheroName(event.getValue());
-            superheroGrid.setDataProvider(superheroProvider.withFilter(new ExampleFilter<>(filterHero)));
-        });
-        heroLayout.addComponent(heroFilter);
-
-        VerticalLayout personLayout = new VerticalLayout();
-        gridLayout.addComponent(personLayout);
-
-        personLayout.addComponent(new Label("Persons"));
-
         personGrid.setDataProvider(employeeProvider);
         personGrid.removeColumn("id");
-        personLayout.addComponent(personGrid);
 
-        TextField employeeFilter = new TextField("name filter", (event) -> {
-            Person filterEmployee = new Person();
-            filterEmployee.setName(event.getValue());
-            personGrid.setDataProvider(employeeProvider.withFilter(new ExampleFilter<>(filterEmployee)));
+        sampleDataButton.addClickListener((event) -> {
+            createSampleData();
         });
-        personLayout.addComponent(employeeFilter);
+
+        heroFilter.addValueChangeListener((event) -> {
+            filterSuperheroes(event.getValue());
+        });
+
+        employeeFilter.addValueChangeListener((event) -> {
+            filterPersons(event.getValue());
+        });
     }
 
     public void createSampleData() {
@@ -104,5 +112,17 @@ public class EntityProviderDemoUI extends UI {
             personGrid.setDataProvider(personGrid.getDataProvider());
         }
 
+    }
+
+    public void filterPersons(String filter) {
+        Person filterPerson = new Person();
+        filterPerson.setName(filter);
+        personGrid.setDataProvider(employeeProvider.withFilter(new ExampleFilter<>(filterPerson)));
+    }
+
+    public void filterSuperheroes(String filter) {
+        Superhero filterHero = new Superhero();
+        filterHero.setSuperheroName(filter);
+        superheroGrid.setDataProvider(superheroProvider.withFilter(new ExampleFilter<>(filterHero)));
     }
 }
